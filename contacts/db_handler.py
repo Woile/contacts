@@ -61,3 +61,4 @@ class DBHandler:
             return
         with self.manager as manager:
             manager.save(instance)
+            self.pk_index.append(self.pk)

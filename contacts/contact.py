@@ -2,6 +2,7 @@
 class ContactCSVSerializer:
 
     def read(self, line):
+        """Curate data to be stored in db."""
         return Contact(
             pk=line[0],
             first_name=line[1],
@@ -57,9 +58,3 @@ class Contact:
         msg = '({0})\t{1} ({2}) {3}\t{4}\t{5}'
         return msg.format(self.pk, self.first_name, self.alias, self.last_name,
                           self.email, self.phone)
-
-    def serialize(self):
-        """Curate data to be stored in db."""
-        msg = '{0},{1},{2},{3},{4},{5}'
-        return msg.format(self.pk, self.first_name, self.last_name,
-                          self.alias, self.email, self.phone)

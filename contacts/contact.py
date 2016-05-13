@@ -1,4 +1,27 @@
 
+class ContactCSVSerializer:
+
+    def read(self, line):
+        return Contact(
+            pk=line[0],
+            first_name=line[1],
+            last_name=line[2],
+            alias=line[3],
+            email=line[4],
+            phone=line[5],
+            in_db=True)
+
+    def write(self, instance):
+        return [
+            instance.pk,
+            instance.first_name,
+            instance.last_name,
+            instance.alias,
+            instance.email,
+            instance.phone
+        ]
+
+
 class Contact:
     """In memory representation of a contact."""
 

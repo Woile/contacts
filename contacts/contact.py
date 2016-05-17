@@ -51,4 +51,4 @@ class Contact:
     def search_helper(self):
         _helper = '{0}{1}{2}{3}{4}{5}'
         return _helper.format(self.pk, self.first_name, self.alias, self.last_name,
-                              self.email, self.phone)
+                              self.email, self.phone).lower()

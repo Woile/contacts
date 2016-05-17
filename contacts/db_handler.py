@@ -9,7 +9,12 @@ class CSVManager:
         self.indexes = []
 
     def __enter__(self):
-        self.rfile = open(self.db_name)  # read
+        try:
+            self.rfile = open(self.db_name)  # read
+        except FileNotFoundError:
+            f = open(self.db_name, 'w')
+            f.close()
+            self.rfile = open(self.db_name)
         self.afile = open(self.db_name, 'a')  # append
         return self
 
@@ -37,7 +42,10 @@ class CSVManager:
         if not self.indexes:
             self.all()  # Run to populate indexes.
         if instance.pk is None:
-            instance.pk = max(self.indexes) + 1
+            try:
+                instance.pk = max(self.indexes) + 1
+            except ValueError:
+                instance.pk = 0
             instance.in_db = True
         _line = self.serializer.csv.serialize(instance)
         writer = csv.writer(self.afile)

@@ -13,6 +13,19 @@ Includes the following features:
 - csv storage.
 
 
-### TODO
+## Usage
+
+Create a virtualenv with python 3.5.
+
+Install requirements:
+`pip install -r requirements.txt`
+
+Run this command for more information
+`python contacts_cli.py --help`
+
+
+## TODO
 
 - Update a contact
+- Remove a contact
+- Tests

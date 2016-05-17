@@ -1,14 +1,12 @@
 import csv
-from contacts import ContactCSVSerializer
 
 
 class CSVManager:
 
     def __init__(self, db_name, serializer=None):
         self.db_name = db_name
-        if serializer is None:
-            serializer = ContactCSVSerializer()
         self.serializer = serializer
+        self.indexes = []
 
     def __enter__(self):
         self.rfile = open(self.db_name)  # read
@@ -20,45 +18,55 @@ class CSVManager:
         self.afile.close()
 
     def all(self):
-        reader = csv.reader(self.rfile)
-        indexes = []
+        """Parse csv and return instances."""
         qs = []
+        indexes = []
+        reader = csv.reader(self.rfile)
         for line in reader:
-            indexes.append(line[0])
-            qs.append(self.serializer.read(line))
-        return qs, indexes
+            indexes.append(int(line[0]))
+            qs.append(self.serializer.csv.deserialize(line))
+
+        self.indexes = indexes
+        return qs
 
     def save_bulk(self, qs):
         pass
 
     def save(self, instance):
-        if not isinstance(instance, list):
-            instance = self.serializer.write(instance)
+        """Save into csv."""
+        if not self.indexes:
+            self.all()  # Run to populate indexes.
+        if instance.pk is None:
+            instance.pk = max(self.indexes) + 1
+            instance.in_db = True
+        _line = self.serializer.csv.serialize(instance)
         writer = csv.writer(self.afile)
-        writer.writerow(instance)
+        writer.writerow(_line)
+        return instance
 
 
 class DBHandler:
     """DB Abstraction."""
 
     def __init__(self, manager=None):
-        if manager is None:
-            manager = CSVManager('contacts.csv')
-        self.manager = manager
-        self.queryset = None
-        self.pk_index = []
+        self._manager = manager
+        self.queryset = []
 
-    def load_db_in_memory(self):
-        with self.manager as manager:
-            self.queryset, self.pk_index = manager.all()
+    def all(self):
+        with self._manager as manager:
+            self.queryset = manager.all()
+        return self.queryset
 
-    def save_collection(self):
-        with self.manager as manager:
+    def filter(self):
+        """Filter based on provided information."""
+        pass
+
+    def save_bulk(self):
+        """Save multiple instances at once."""
+        with self._manager as manager:
             manager.save_bulk(self.queryset)
 
     def save(self, instance, update=False):
-        if not update and instance.pk in self.pk_index:
-            return
-        with self.manager as manager:
-            manager.save(instance)
-            self.pk_index.append(self.pk)
+        """Save a single instance."""
+        with self._manager as manager:
+            self.queryset.append(manager.save(instance))

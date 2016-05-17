@@ -1,33 +1,19 @@
+from .serializers import CSVSerializer
 
-class ContactCSVSerializer:
 
-    def read(self, line):
-        """Curate data to be stored in db."""
-        return Contact(
-            pk=line[0],
-            first_name=line[1],
-            last_name=line[2],
-            alias=line[3],
-            email=line[4],
-            phone=line[5],
-            in_db=True)
+class ContactSerializer:
 
-    def write(self, instance):
-        return [
-            instance.pk,
-            instance.first_name,
-            instance.last_name,
-            instance.alias,
-            instance.email,
-            instance.phone
-        ]
+    def __init__(self):
+        field_order = ('pk', 'first_name', 'last_name', 'alias',
+                       'email', 'phone', 'in_db')
+        self.csv = CSVSerializer(Contact, field_order)
 
 
 class Contact:
     """In memory representation of a contact."""
 
     def __init__(self, pk=None, first_name=None, last_name=None, alias=None,
-                 email=None, phone=None, in_db=False):
+                 email=None, phone=None, in_db=False, raw=None):
         """Initialization of a single contact.
 
         :param pk:
@@ -52,9 +38,17 @@ class Contact:
         self.email = email
         self.phone = phone
         self.in_db = in_db
+        self.raw = raw
 
     def __str__(self):
         """Print representation."""
-        msg = '({0})\t{1} ({2}) {3}\t{4}\t{5}'
-        return msg.format(self.pk, self.first_name, self.alias, self.last_name,
+        alias = '({0}) '.format(self.alias) if self.alias else ''
+
+        msg = '({0})\t{1} {2}{3:20}\t{4:20}\t\t{5}'
+        return msg.format(self.pk, self.first_name, alias, self.last_name,
                           self.email, self.phone)
+
+    def search_helper(self):
+        _helper = '{0}{1}{2}{3}{4}{5}'
+        return _helper.format(self.pk, self.first_name, self.alias, self.last_name,
+                              self.email, self.phone)
